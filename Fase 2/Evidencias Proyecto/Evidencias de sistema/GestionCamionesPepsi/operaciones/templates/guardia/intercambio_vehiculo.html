@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Intercambio de Vehículos</h1>
+        <a href="{% url 'guardia_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Choferes con Intercambio Pendiente</h4>
+        </div>
+        <div class="list-group list-group-flush">
+            {% for chofer in choferes_pendientes %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1">{{ chofer.get_full_name }}</h5>
+                    <small class="text-muted">Debe devolver vehículo de respaldo y retirar su vehículo principal.</small>
+                </div>
+                <form method="POST" onsubmit="return confirm('¿Confirmas el intercambio de vehículos para {{ chofer.get_full_name }}?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="chofer_id" value="{{ chofer.id }}">
+                    <button type="submit" class="btn btn-success">Procesar Intercambio</button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="list-group-item text-center text-muted">
+                No hay intercambios pendientes en este momento.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

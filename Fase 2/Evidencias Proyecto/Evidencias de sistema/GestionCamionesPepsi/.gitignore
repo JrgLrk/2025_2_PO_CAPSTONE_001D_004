@@ -1,0 +1,31 @@
+# Entorno Virtual
+entornovirtual/
+
+# --- Base de datos ---
+db.sqlite3
+
+# --- Archivos generados automáticamente ---
+__pycache__
+.pyc
+.pyo
+
+# --- Archivos estáticos y multimedia ---
+staticfiles
+media
+
+# --- Entornos virtuales ---
+venv
+env
+.venv
+
+# --- Archivos de entorno y configuración local ---
+.env
+
+# --- Archivos del sistema operativo ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de configuración de IDEs (ejemplos)
+.vscode/
+.idea/

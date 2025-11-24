@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Panel del Chofer</h1>
+        <span class="text-muted">Bienvenido, {{ request.user.first_name }}</span>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header fw-bold">
+                    <i class="bi bi-truck me-2"></i>Mis Vehículos Asignados
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for v in vehiculos_principales %}
+                        <li class="list-group-item">
+                            <strong>{{ v.patente }}</strong> ({{ v.marca }} {{ v.modelo }})
+                            <span class="badge float-end 
+                                {% if v.estado_actual == 'DISPONIBLE' %}bg-success
+                                {% elif v.estado_actual == 'EN_TALLER' %}bg-warning
+                                {% elif v.estado_actual == 'EN_RUTA' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ v.get_estado_actual_display }}
+                            </span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No tiene vehículos principales asignados.</li>
+                    {% endfor %}
+
+                    {% if vehiculos_backup %}
+                        <li class="list-group-item list-group-item-secondary">
+                            <small class="fw-bold">VEHÍCULO DE RESPALDO:</small>
+                        </li>
+                        {% for v_backup in vehiculos_backup %}
+                        <li class="list-group-item">
+                            <strong>{{ v_backup.patente }}</strong> ({{ v_backup.marca }} {{ v_backup.modelo }})
+                            <span class="badge float-end {% if v_backup.estado_actual == 'DISPONIBLE' %}bg-success{% elif v_backup.estado_actual == 'EN_TALLER' %}bg-danger{% elif v_backup.estado_actual == 'EN_RUTA' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                {{ v_backup.get_estado_actual_display }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header fw-bold">
+                    <i class="bi bi-tools me-2"></i>Mantenimiento Actual
+                </div>
+                {% if mantenimiento_actual %}
+                    <div class="card-body">
+                        <h5 class="card-title">Vehículo: {{ mantenimiento_actual.vehiculo.patente }}</h5>
+                        <p class="card-text">
+                            <strong>Fecha Solicitud:</strong> {{ mantenimiento_actual.fecha_solicitud|date:"d/m/Y H:i" }} <br>
+                            <strong>Estado:</strong> 
+                            <span class="badge bg-warning">{{ mantenimiento_actual.get_estado_display }}</span>
+                        </p>
+
+                        {% if mantenimiento_actual.estado == 'VALIDADO' %}
+                        <hr>
+                        <div class="alert alert-info small p-2">
+                            <i class="bi bi-geo-alt-fill me-2"></i>
+                            <strong>Ubicación para retiro:</strong><br>
+                            {% if mantenimiento_actual.taller %}<strong>Taller:</strong> {{ mantenimiento_actual.taller.nombre_taller }}<br>{% endif %}
+                            {% if mantenimiento_actual.vehiculo.sitio %}<strong>Sitio:</strong> {{ mantenimiento_actual.vehiculo.sitio.nombre_sitio }}{% endif %}
+                        </div>
+                        <p class="text-center">Tu vehículo está listo. El guardia registrará la salida del recinto.</p>
+                        {% endif %}
+
+                    </div>
+                {% else %}
+                    <div class="card-body">
+                        <p class="card-text text-muted">No tiene mantenimientos activos en este momento.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

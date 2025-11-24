@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="panel-header">
+        <h1>Panel de Coordinación</h1>
+    </div>
+
+    <div class="task-card">
+        <div class="card-content">
+            <h4 class="card-title mb-4">Administración y Gestión</h4>
+            <div class="list-group">
+                <a href="{% url 'user_list' %}" class="list-group-item list-group-item-action">Gestionar Usuarios</a>
+                <a href="{% url 'vehicle_list' %}" class="list-group-item list-group-item-action">Gestionar Vehículos</a>
+                <a href="{% url 'gestion_agenda' %}" class="list-group-item list-group-item-action">Gestionar Agenda de Taller</a>                
+                <a href="{% url 'gestion_backups' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Gestionar Vehículos de Respaldo
+                    {% if pending_backups_count > 0 %}<span class="badge bg-danger rounded-pill">{{ pending_backups_count }}</span>{% endif %}
+                </a>
+                <a href="{% url 'gestion_insumos' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Aprobar Solicitudes de Insumos
+                    {% if pending_insumos_count > 0 %}<span class="badge bg-danger rounded-pill">{{ pending_insumos_count }}</span>{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% comment %}
+    Este bloque se muestra solo si el trabajo fue rechazado.
+    La variable 'observacion_rechazo' viene desde la vista.
+{% endcomment %}
+{% if observacion_rechazo %}
+<div class="card border-danger mb-4">
+    <div class="card-header bg-danger text-white">
+        <h4 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Trabajo Rechazado por Supervisor</h4>
+    </div>
+    <div class="card-body text-danger">
+        <p class="card-text">El supervisor ha devuelto este trabajo con la siguiente observación. Por favor, corrígela y vuelve a enviar a validación.</p>
+        <p class="mb-0"><strong>Motivo del Rechazo:</strong></p>
+        <blockquote class="blockquote mb-0 bg-light p-2 border-start border-danger border-3">
+            <p class="mb-0">"{{ observacion_rechazo.texto_limpio }}"</p>
+        </blockquote>
+    </div>
+</div>
+{% endif %}
+<div class="container mt-4">
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Trabajo de Mantenimiento: {{ mantenimiento.vehiculo.patente }}</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Vehículo:</strong> {{ mantenimiento.vehiculo.marca }} {{ mantenimiento.vehiculo.modelo }}</p>
+                    <p><strong>Estado Actual:</strong> 
+                        {% if es_editable %}
+                            <span class="badge bg-info">{{ mantenimiento.get_estado_display }}</span>
+                        {% else %}
+                            <span class="badge bg-success">{{ mantenimiento.get_estado_display }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Motivo de Ingreso (Chofer):</strong></p>
+                    <p class="text-muted">{{ mantenimiento.motivo_ingreso }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-lg-7">
+            
+            <div class="card mb-4">
+                <div class="card-header">Diagnóstico y Trabajo Realizado</div>
+                <div class="card-body">
+                    {% if es_editable %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_name" value="diagnostico">
+                            
+                            <div class="mb-3">
+                                {{ diag_form.diagnostico.label_tag }}
+                                {{ diag_form.diagnostico }}
+                            </div>
+                            <div class="mb-3">
+                                {{ diag_form.trabajo_realizado.label_tag }}
+                                {{ diag_form.trabajo_realizado }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Guardar Diagnóstico</button>
+                            <small class="form-text text-muted ms-2">
+                                (Al guardar, el estado cambiará a "En Reparación")
+                            </small>
+                        </form>
+                    {% else %}
+                        <h5>Diagnóstico Técnico</h5>
+                        <p class="text-muted bg-light p-2 rounded">{{ mantenimiento.diagnostico|default:"No se registró diagnóstico."|linebreaksbr }}</p>
+                        
+                        <h5>Trabajo Realizado</h5>
+                        <p class="text-muted bg-light p-2 rounded">{{ mantenimiento.trabajo_realizado|default:"No se registró el trabajo realizado."|linebreaksbr }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Insumos y Repuestos</div>
+                <div class="card-body">
+                    {% if es_editable %}
+                        <h5>Añadir Insumo</h5>
+                        <form method="POST" class="row g-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_name" value="insumo">
+                            <div class="col-md-6">
+                                {{ insumo_form.nombre_insumo.label_tag }}
+                                {{ insumo_form.nombre_insumo }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ insumo_form.cantidad.label_tag }}
+                                {{ insumo_form.cantidad }}
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-success w-100">Añadir</button>
+                            </div>
+                        </form>
+                        <hr>
+                    {% endif %}
+
+                    <h5>Insumos Añadidos</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for insumo in insumos_existentes %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    {{ insumo.nombre_insumo }}
+                                    <br>
+                                    {% if insumo.estado_aprobacion == 'PENDIENTE' %}
+                                        <small class="text-warning">{{ insumo.get_estado_aprobacion_display }}</small>
+                                    {% elif insumo.estado_aprobacion == 'APROBADO' %}
+                                        <small class="text-success">{{ insumo.get_estado_aprobacion_display }}</small>
+                                    {% else %}
+                                        <small class="text-danger">{{ insumo.get_estado_aprobacion_display }}</small>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-secondary rounded-pill">Cant: {{ insumo.cantidad|floatformat }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">No se han añadido insumos.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            {% if es_editable %}
+            <div class="card mb-4">
+                <div class="card-header">Finalizar Trabajo</div>
+                <div class="card-body">
+                    <p>Una vez completado el diagnóstico, el trabajo realizado y añadidos todos los insumos y fotos, puede enviar el trabajo a validación del supervisor.</p>
+                    
+                    <form method="POST" action="{% url 'cerrar_reparacion' mantenimiento.id %}">
+                        {% csrf_token %}
+                        
+                        {% if not mantenimiento.diagnostico or not mantenimiento.trabajo_realizado %}
+                            <button type="submit" class="btn btn-primary w-100" disabled>
+                                Finalizar y Enviar a Validación
+                            </button>
+                            <small class="form-text text-danger mt-2 d-block">
+                                Debe rellenar "Diagnóstico Técnico" y "Trabajo Realizado" para poder finalizar.
+                            </small>
+                        {% else %}
+                             <button type="submit" class="btn btn-primary w-100">
+                                Finalizar y Enviar a Validación
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+        </div> <div class="col-lg-5">
+
+            {% if es_editable %}
+            <div class="card mb-4">
+                <div class="card-header">Gestión de Pausa</div>
+                <div class="card-body">
+                    {% if pausa_activa %}
+                        <div class="alert alert-warning" role="alert">
+                            <h5 class="alert-heading">Trabajo en Pausa</h5>
+                            <p><strong>Motivo:</strong> {{ pausa_activa.motivo }}</p>
+                            <p><strong>Inicio:</strong> {{ pausa_activa.inicio_pausa|date:"H:i:s" }}</p>
+                        </div>
+                        <form method="POST" action="{% url 'terminar_pausa' mantenimiento.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning w-100">Terminar Pausa</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{% url 'iniciar_pausa' mantenimiento.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                {{ pausa_form.motivo.label_tag }}
+                                {{ pausa_form.motivo }}
+                                {% if pausa_form.motivo.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ pausa_form.motivo.errors.as_text }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Iniciar Pausa</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">Fotos de Evidencia</div>
+                <div class="card-body">
+                    {% if es_editable %}
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_name" value="foto">
+                            <div class="mb-3">
+                                {{ foto_form.imagen.label_tag }}
+                                {{ foto_form.imagen }}
+                            </div>
+                            <div class="mb-3">
+                                {{ foto_form.descripcion.label_tag }}
+                                {{ foto_form.descripcion }}
+                            </div>
+                            <button type="submit" class="btn btn-success">Subir Foto</button>
+                        </form>
+                        <hr>
+                    {% else %}
+                        {% if not fotos_existentes %}
+                        <div class="alert alert-light">No se subieron fotos de evidencia para este trabajo.</div>
+                        {% endif %}
+                    {% endif %}
+
+                    <h5>Galería de Evidencias</h5>
+                    <div class="row row-cols-2 g-2">
+                        {% for foto in fotos_existentes %}
+                            <div class="col">
+                                <a href="{% url 'descargar_foto_mantenimiento' foto.id %}" target="_blank">
+                                    <img src="{% url 'descargar_foto_mantenimiento' foto.id %}" class="img-fluid rounded" alt="{{ foto.descripcion }}">
+                                </a>
+                                <small class="text-muted">{{ foto.descripcion }}</small>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted">No hay fotos subidas para este mantenimiento.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div> </div> </div> {% endblock %}

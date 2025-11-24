@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Sitios</h1>
+        <div>
+            <a href="{% url 'sitio_create' %}" class="btn btn-success">Crear Sitio</a>
+            <a href="{% url 'vehicle_list' %}" class="btn btn-secondary">Volver a Vehículos</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <ul class="list-group">
+                {% for sitio in sitios %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ sitio.nombre_sitio }}
+                    <a href="{% url 'sitio_edit' pk=sitio.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">No hay sitios registrados.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

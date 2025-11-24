@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Solicitar Vehículo de Respaldo</h3>
+                </div>
+                <div class="card-body">
+                    <p>Si tu vehículo principal está en mantenimiento y necesitas un vehículo de respaldo para continuar tu ruta, puedes enviar una solicitud al coordinador desde aquí.</p>
+                    <form method="POST">
+                        {% csrf_token %}
+                        {% if solicitud_existente %}
+                        <div class="alert alert-info">Ya tienes una solicitud pendiente. El coordinador la revisará pronto.</div>
+                        {% endif %}
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">Motivo de la solicitud (opcional)</label>
+                            <textarea name="motivo" id="motivo" class="form-control" rows="3" placeholder="Ej: Mi camión está en el taller por mantenimiento no programado." {% if solicitud_existente %}disabled{% endif %}></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary" {% if solicitud_existente %}disabled{% endif %}>Enviar Solicitud al Coordinador</button>
+                            <a href="{% url 'chofer_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

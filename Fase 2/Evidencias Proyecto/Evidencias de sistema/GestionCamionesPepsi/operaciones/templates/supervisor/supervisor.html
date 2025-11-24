@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="panel-header">
+        <h1>Panel de Supervisor</h1>
+        <a href="{% url 'supervisor_reportes' %}" class="btn btn-info" role="button">
+            <i class="bi bi-graph-up-arrow"></i> Ver Reportes y KPIs
+        </a>
+    </div>
+    <h4 class="mb-3">Reparaciones Pendientes de Validación</h4>
+
+    {% if mantenimientos_por_validar %}
+        <div class="card-grid">
+            {% for mant in mantenimientos_por_validar %}
+            <!-- Tarjeta de Tarea -->
+            <div class="task-card status-medium">
+                <div class="card-content">
+                    <div class="card-header-flex">
+                        <h3 class="card-title">
+                            <span class="patente">Patente: {{ mant.vehiculo.patente }}</span>
+                            {{ mant.vehiculo.marca }} {{ mant.vehiculo.modelo }}
+                        </h3>
+                        <span class="status-badge badge-medium">Pendiente</span>
+                    </div>
+                    <div class="card-details">
+                        <p><strong>Mecánico:</strong> {{ mant.mecanico_asignado.get_full_name }}</p>
+                        <p><strong>Motivo:</strong> {{ mant.motivo_ingreso|truncatechars:80 }}</p>
+                        <p><strong>Fecha Solicitud:</strong> <small>{{ mant.fecha_solicitud|date:"d/m/Y H:i" }}</small></p>
+                    </div>
+                </div>
+                <div class="card-footer-actions">
+                    <a href="{% url 'validar_reparacion' mantenimiento_id=mant.id %}" class="btn btn-primary btn-full-width" role="button">Revisar y Validar</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-success text-center" role="alert">
+            <h4 class="alert-heading">¡Excelente trabajo!</h4>
+            <p class="mb-0">No hay reparaciones pendientes de validación en este momento.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

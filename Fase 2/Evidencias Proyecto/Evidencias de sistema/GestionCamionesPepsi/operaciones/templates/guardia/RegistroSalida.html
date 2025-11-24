@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Registro de Salida{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm rounded-4">
+    <div class="card-body p-4 p-md-5">
+      <h2 class="fw-bold mb-1">Registro de Salida de Vehículo</h2>
+      <p class="text-muted mb-4">Complete los detalles a continuación para registrar la salida.</p>
+
+      <form method="POST" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-6">
+          <label for="patente" class="form-label">Patente del Vehículo</label>
+          <select id="patente" name="patente" class="form-select form-select-lg" required>
+            <option value="" selected disabled>-- Seleccione un vehículo --</option>
+            {% for vehiculo in vehiculos %}
+              <option value="{{ vehiculo.patente }}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</option>
+            {% empty %}
+              <option value="" disabled>No hay vehículos listos para salir</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">La lista muestra vehículos con mantenimiento validado y listos para salir.</div>
+        </div>
+
+        {# Si la vista envía 'choferes' en el contexto, se mostrará el select #}
+        <div class="col-md-6">
+          <label for="chofer" class="form-label">Asignar Chofer</label>
+          <select id="chofer" name="chofer" class="form-select form-select-lg" {% if not choferes %}disabled{% endif %}>
+            <option value="">-- No asignar chofer --</option>
+            {% if choferes %}
+              {% for c in choferes %}
+                <option value="{{ c.id }}">{{ c.first_name }} {{ c.last_name }}</option>
+              {% endfor %}
+            {% else %}
+              <option value="" disabled>No hay choferes con vehículos en el taller</option>
+            {% endif %}
+          </select>
+          <div class="form-text">Solo se muestran choferes con un vehículo actualmente en el taller.</div>
+          <div class="form-text">Si asigna un chofer, el vehículo quedará "En Ruta". De lo contrario, quedará "Disponible".</div>
+        </div>
+
+        <div class="col-12 text-end mt-3">
+          <a href="{% url 'guardia_dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary ms-2">Registrar Salida</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="panel-header">
+        <h1>Gestión de Vehículos de Respaldo</h1>
+        <div>
+            <a href="{% url 'reporte_intercambios' %}" class="btn btn-info" role="button">Ver Reporte de Movimientos</a>
+            <a href="{% url 'coordinacion_dashboard' %}" class="btn btn-secondary" role="button">Volver al Panel</a>
+        </div>
+    </div>
+
+    <!-- Sección de Solicitudes Pendientes -->
+    {% if solicitudes_pendientes %}
+    <div class="mb-4">
+        <h4 class="mb-3">Solicitudes de Backup Pendientes</h4>
+        <div class="card-grid">
+        {% for solicitud in solicitudes_pendientes %}
+            <div class="task-card status-high">
+                <div class="card-content">
+                    <div class="card-header-flex">
+                        <h3 class="card-title">Chofer: {{ solicitud.chofer.display_name }}</h3>
+                        <span class="status-badge badge-high">Requiere Acción</span>
+                    </div>
+                    <div class="card-details">
+                        <p><strong>Motivo:</strong> {{ solicitud.motivo }}</p>
+                        <p><small>Fecha: {{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}</small></p>
+                    </div>
+                </div>
+                <div class="card-footer-actions">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
+                        <input type="hidden" name="chofer" value="{{ solicitud.chofer.id }}">
+                        <div class="input-group">
+                            <select name="vehiculo_patente" class="form-select" required>
+                                <option value="" selected disabled>Asignar vehículo...</option>
+                                {% for vehiculo in backups_disponibles %}
+                                <option value="{{ vehiculo.patente }}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-primary" type="submit">Asignar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <h4 class="mb-3">Vehículos de Respaldo Disponibles</h4>
+            <div class="card">
+                <ul class="list-group list-group-flush">
+                {% for vehiculo in backups_disponibles %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.sitio.nombre_sitio|default:"N/A" }})</span>
+                        <span class="status-badge badge-low">{{ vehiculo.patente }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">No hay vehículos de respaldo disponibles.</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <h4 class="mb-3">Vehículos de Respaldo Asignados</h4>
+            <div class="card">
+                <ul class="list-group list-group-flush">
+                {% for vehiculo in backups_asignados %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <span>{{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.patente }})</span>
+                            <span class="status-badge badge-medium">{{ vehiculo.get_estado_actual_display }}</span>
+                        </div>
+                        <small class="text-muted">Asignado a: {{ vehiculo.chofer_asignado.get_full_name }}</small>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">Ningún vehículo de respaldo está asignado.</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

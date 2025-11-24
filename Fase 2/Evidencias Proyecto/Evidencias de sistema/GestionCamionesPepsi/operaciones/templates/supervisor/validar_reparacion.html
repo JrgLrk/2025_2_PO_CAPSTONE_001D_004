@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Revisión de Mantenimiento #{{ mantenimiento.id }}</h3>
+        <a href="{% url 'supervisor_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="row">
+        <!-- Columna Izquierda: Datos Principales y Formulario de Acción -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Detalles del Vehículo y Trabajo Realizado</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Vehículo: {{ mantenimiento.vehiculo.marca }} {{ mantenimiento.vehiculo.modelo }} - <span class="badge bg-primary">{{ mantenimiento.vehiculo.patente }}</span></h5>
+                    <hr>
+                    <h6>Motivo de Ingreso (Reportado por Chofer)</h6>
+                    <p class="text-muted">{{ mantenimiento.motivo_ingreso }}</p>
+
+                    <h6>Diagnóstico del Mecánico</h6>
+                    <p>{{ mantenimiento.diagnostico|default:"No se registró diagnóstico." }}</p>
+
+                    <h6>Trabajo Realizado por {{ mantenimiento.mecanico_asignado.get_full_name }}</h6>
+                    <p>{{ mantenimiento.trabajo_realizado|default:"No se describió el trabajo realizado." }}</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Formulario de Validación</h4>
+                </div>
+                <div class="card-body">
+                    <p>Una vez revisada toda la evidencia, proceda a validar o rechazar la reparación.</p>
+                    <!-- Aquí irá el formulario para aprobar/rechazar en el siguiente paso -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="observaciones_supervisor" class="form-label">Observaciones Adicionales (Obligatorio si se rechaza)</label>
+                            <textarea class="form-control" id="observaciones_supervisor" name="observaciones_supervisor" rows="3"></textarea>
+                        </div>
+                        <button type="submit" name="accion" value="validar" class="btn btn-success" id="btn-validar">Aprobar y Validar</button>
+                        <button type="submit" name="accion" value="rechazar" class="btn btn-danger" id="btn-rechazar" disabled>Rechazar Reparación</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Evidencia y Datos Relacionados -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Evidencia Fotográfica</h5>
+                </div>
+                <div class="card-body">
+                    {% if fotos %}
+                        <div class="row row-cols-2 g-2">
+                        {% for foto in fotos %}
+                            <div class="col">
+                                <a href="{% url 'descargar_foto_mantenimiento' foto.id %}" target="_blank">
+                                    <img src="{% url 'descargar_foto_mantenimiento' foto.id %}" alt="{{ foto.descripcion }}" class="img-fluid rounded">
+                                </a>
+                                <small class="text-muted">{{ foto.descripcion }}</small>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No se subieron fotos para este mantenimiento.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Insumos Utilizados</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for insumo in insumos %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ insumo.nombre_insumo }}
+                            <span class="badge bg-info rounded-pill">{{ insumo.cantidad }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No se registraron insumos.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Bitácora de Observaciones</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for obs in observaciones %}
+                        <li class="list-group-item">
+                            <p class="mb-0">{{ obs.texto }}</p>
+                            <small class="text-muted">-- {{ obs.usuario.get_full_name }} el {{ obs.fecha|date:"d/m/y H:i" }}</small>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No hay observaciones en la bitácora.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const observacionesTextarea = document.getElementById('observaciones_supervisor');
+    const btnRechazar = document.getElementById('btn-rechazar');
+    const btnValidar = document.getElementById('btn-validar');
+
+    // Habilitar/deshabilitar el botón de rechazo basado en el contenido del textarea
+    observacionesTextarea.addEventListener('input', function() {
+        btnRechazar.disabled = this.value.trim() === '';
+    });
+
+    // Hacer el textarea requerido solo si se hace clic en rechazar
+    btnRechazar.addEventListener('click', function() {
+        observacionesTextarea.required = true;
+    });
+
+    // Asegurarse de que no sea requerido si se hace clic en validar
+    btnValidar.addEventListener('click', function() {
+        observacionesTextarea.required = false;
+    });
+});
+</script>
+{% endblock %}

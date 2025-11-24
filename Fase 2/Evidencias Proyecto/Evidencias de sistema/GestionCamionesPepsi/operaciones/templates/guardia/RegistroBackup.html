@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Entrega de Backup{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm rounded-4">
+    <div class="card-body p-4 p-md-5">
+      <h2 class="fw-bold mb-1">Entrega de Camión Alternativo</h2>
+      <p class="text-muted mb-4">Registre la entrega del vehículo de respaldo al chofer receptor.</p>
+
+      <form method="POST" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-6">
+          <label for="patente" class="form-label">Patente del Vehículo Backup</label>
+          <select id="patente" name="patente" class="form-select form-select-lg" required>
+            <option value="">-- Seleccione vehículo backup --</option>
+            {% for v in backups %}
+              <option value="{{ v.patente }}">{{ v.patente }} - {{ v.marca }} {{ v.modelo }}</option>
+            {% empty %}
+              <option disabled>No hay backups disponibles</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label for="chofer" class="form-label">Chofer Receptor</label>
+          <select id="chofer" name="chofer" class="form-select form-select-lg" required>
+            <option value="">-- Seleccione chofer --</option>
+            {% for c in choferes %}
+              <option value="{{ c.id }}">{{ c.first_name }} {{ c.last_name }} {% if c.username %}({{ c.username }}){% endif %}</option>
+            {% empty %}
+              <option disabled>No hay choferes registrados</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12">
+          <div class="form-check">
+            <input id="confirmacion_visual" name="confirmacion_visual" class="form-check-input" type="checkbox">
+            <label for="confirmacion_visual" class="form-check-label">Confirmación Visual</label>
+            <div class="form-text">Marque la casilla para confirmar la entrega.</div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Firma Digital del Chofer (área visual)</label>
+          <div class="border rounded-2 p-3 bg-light" style="min-height:120px; display:flex; align-items:center; justify-content:center;">
+            <small class="text-muted">Área de firma (no funcional)</small>
+          </div>
+        </div>
+
+        <div class="col-12 text-end mt-3">
+          <a href="{% url 'guardia_dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary ms-2">Entregar Vehículo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

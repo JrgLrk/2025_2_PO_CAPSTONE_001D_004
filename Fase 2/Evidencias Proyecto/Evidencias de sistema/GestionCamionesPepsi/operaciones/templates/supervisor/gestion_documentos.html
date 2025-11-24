@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Gestión de Documentos</h1>
+            <h4 class="text-muted">Vehículo: <span class="badge bg-primary">{{ vehiculo.patente }}</span> {{ vehiculo.marca }} {{ vehiculo.modelo }}</h4>
+        </div>
+        <a href="{% url 'seleccionar_vehiculo_documentos' %}" class="btn btn-secondary align-self-start">Volver a la selección</a>
+    </div>
+
+    <div class="row">
+        <!-- Columna para subir nuevos documentos -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Subir Nuevo Documento</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary w-100">Subir Archivo</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna para listar documentos existentes -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Documentos del Vehículo</h5>
+                </div>
+                <div class="card-body">
+                    {% if documentos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Documento</th>
+                                    <th>Vencimiento</th>
+                                    <th>Subido por</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in documentos %}
+                                <tr>
+                                    <td><a href="{% url 'descargar_documento' doc.id %}" target="_blank">{{ doc.nombre_documento }}</a></td>
+                                    <td>{{ doc.fecha_vencimiento|date:"d/m/Y"|default:"N/A" }}</td>
+                                    <td>{{ doc.subido_por.first_name }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'descargar_documento' doc.id %}" class="btn btn-sm btn-outline-primary" target="_blank"><i class="bi bi-download"></i></a>
+                                        <form method="POST" action="{% url 'eliminar_documento' doc.id %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este documento?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Aún no se han subido documentos.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

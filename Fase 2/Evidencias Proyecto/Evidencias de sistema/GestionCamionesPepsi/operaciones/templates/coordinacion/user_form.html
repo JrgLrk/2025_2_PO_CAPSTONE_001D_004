@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ titulo }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {{ form.non_field_errors }}
+                        
+                        {% for field in form.visible_fields %}
+                            <p>{{ field.label_tag }} {{ field }} {{ field.help_text }}</p>
+                            {% if field.errors %}
+                                <div class="alert alert-danger p-2">{{ field.errors }}</div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        <a href="{% url 'user_list' %}" class="btn btn-secondary">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ocultamos el campo de username y su label en el formulario de creación/edición
+    // ya que se genera automáticamente y no se debe cambiar.
+    const usernameField = document.getElementById('id_username');
+    if (usernameField) {
+        // Ocultamos el <p> que contiene el label y el input
+        const parentParagraph = usernameField.closest('p');
+        if (parentParagraph) {
+            parentParagraph.style.display = 'none';
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Registro de Ingreso{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm rounded-4">
+    <div class="card-body p-4 p-md-5">
+      <h2 class="fw-bold mb-1">Registro de Ingreso de Vehículo</h2>
+      <p class="text-muted mb-4">Complete los detalles a continuación para registrar un ingreso.</p>
+
+      <form method="POST" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-6">
+          <label for="patente" class="form-label">Patente del Vehículo (con cita)</label>
+          <input id="patente" name="patente" type="text" class="form-control form-control-lg" list="patentes_list" placeholder="Seleccione o busque la patente..." required>
+          <datalist id="patentes_list">
+            {% for vehiculo in vehiculos_para_entrar %}
+              <option value="{{ vehiculo.patente }}">{{ vehiculo.marca }} {{ vehiculo.modelo }} (Agendado)</option>
+            {% empty %}
+              <option value="" disabled>No hay vehículos con cita agendada</option>
+            {% endfor %}
+          </datalist>
+          <div class="form-text">Solo se permite el ingreso de vehículos con una cita agendada.</div>
+        </div>
+
+        <div class="col-md-6">
+          <!-- Espacio vacío para alinear el formulario -->
+        </div>
+        <div class="col-12">
+          <label for="observaciones" class="form-label">Observaciones</label>
+          <textarea id="observaciones" name="observaciones" rows="4" class="form-control" placeholder="Ej: Rayón en puerta delantera derecha."></textarea>
+        </div>
+
+        <div class="col-12">
+          <label for="fotos" class="form-label">Carga de Fotografías</label>
+          <input id="fotos" name="fotos" type="file" class="form-control" accept="image/*" multiple>
+          <div class="form-text">PNG, JPG, GIF hasta 10MB</div>
+        </div>
+
+        <div class="col-12 text-end mt-3">
+          <a href="{% url 'guardia_dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button type="submit" class="btn btn-primary ms-2">Registrar Ingreso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

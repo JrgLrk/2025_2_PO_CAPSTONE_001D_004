@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Documentos</h1>
+        <a href="{% url 'supervisor_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Paso 1: Seleccione un vehículo</h5>
+        </div>
+        <div class="p-3 bg-light border-bottom">
+            <form method="GET" class="row g-2 align-items-center">
+                <div class="col">
+                    <input type="text" name="patente" class="form-control" placeholder="Buscar por patente..." value="{{ filtro_patente_actual }}">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+                <div class="col-auto">
+                    <a href="{% url 'seleccionar_vehiculo_documentos' %}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+        <div class="list-group list-group-flush">
+            {% for vehiculo in vehiculos %}
+                <a href="{% url 'gestion_documentos_por_vehiculo' patente=vehiculo.patente %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-primary me-2">{{ vehiculo.patente }}</span>
+                        <strong>{{ vehiculo.marca }} {{ vehiculo.modelo }}</strong>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            {% empty %}
+                <div class="list-group-item text-center text-muted">No se encontraron vehículos con los criterios de búsqueda.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

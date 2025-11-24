@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Panel de Jefe de Taller - Trabajos Pendientes de Asignación</h3>
+        </div>
+        <div class="card-body">
+            <p>Los siguientes vehículos han ingresado al taller (estado: <strong>EN TALLER</strong>) y requieren asignación de mecánico.</p>
+            <h5 class="card-title">Trabajos Agendados</h5>
+            <p class="card-subtitle mb-3 text-muted">Vehículos ingresados con una cita previa.</p>
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patente</th>
+                            <th>Vehículo</th>
+                            <th>Especialidad Requerida</th>
+                            <th>Asignar Mecánico</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in trabajos_para_asignar %}
+                            <tr>
+                                <td><strong>{{ item.trabajo.vehiculo.patente }}</strong></td>
+                                <td>{{ item.trabajo.vehiculo.marca }} {{ item.trabajo.vehiculo.modelo }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ item.trabajo.agenda.get_tipo_atencion_display }}</span>
+                                </td>
+                                <td style="min-width: 250px;">
+                                    <form method="post" action="{% url 'asignar_mantenimiento' item.trabajo.id %}">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <select name="mecanico" class="form-select" required>
+                                                <option value="">-- Seleccionar mecánico --</option>
+                                                {% for mecanico in item.mecanicos_disponibles %}
+                                                    {% ifchanged mecanico.orden_prioridad %}
+                                                        {% if mecanico.orden_prioridad > 2 %}
+                                                            <option disabled>──────────────────</option>
+                                                        {% endif %}
+                                                    {% endifchanged %}
+                                                    <option value="{{ mecanico.id }}">
+                                                        {{ mecanico.display_name }} ({{ mecanico.get_especialidad_display }})                                                        
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                Asignar
+                                            </button>
+                                        </div>
+                                        {% if not item.mecanicos_disponibles %}
+                                            <small class="text-danger d-block mt-1">No hay mecánicos disponibles para esta especialidad.</small>
+                                        {% endif %}
+                                    </form>                                    
+                                </td>
+                                <td></td> {# Columna de acción vacía, ya que el botón está en el formulario #}
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No hay trabajos pendientes de asignación.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if trabajos_no_agendados %}
+        <div class="card-footer">
+            <h5 class="card-title mt-2">Trabajos No Agendados (Emergencias)</h5>
+            <p class="card-subtitle mb-3 text-muted">Vehículos ingresados sin cita previa. Requieren asignación manual de especialidad.</p>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patente</th>
+                            <th>Vehículo</th>
+                            <th>Motivo Ingreso</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in trabajos_no_agendados %}
+                            <tr>
+                                <td><strong>{{ item.vehiculo.patente }}</strong></td>
+                                <td>{{ item.vehiculo.marca }} {{ item.vehiculo.modelo }}</td>
+                                <td>{{ item.motivo_ingreso|truncatechars:80 }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-warning btn-sm disabled">Asignar Especialidad (Próximamente)</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

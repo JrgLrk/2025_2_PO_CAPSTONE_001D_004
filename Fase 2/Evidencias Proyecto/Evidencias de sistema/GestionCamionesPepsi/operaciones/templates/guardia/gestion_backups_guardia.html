@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Vehículos de Respaldo</h1>
+        <a href="{% url 'guardia_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="row">
+        <!-- Columna para registrar SALIDAS -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Pendientes de Salida</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for vehiculo in pendientes_salida %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">{{ vehiculo.patente }}</h5>
+                            <small class="text-muted">Asignado a: {{ vehiculo.chofer_asignado.display_name }}</small>
+                        </div>
+                        <form method="POST" onsubmit="return confirm('¿Confirmas la SALIDA del vehículo {{ vehiculo.patente }}?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="registrar_salida">
+                            <input type="hidden" name="patente" value="{{ vehiculo.patente }}">
+                            <button type="submit" class="btn btn-primary">Registrar Salida</button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">No hay salidas de backups pendientes.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna para registrar INGRESOS -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>Pendientes de Ingreso (Devolución)</h4>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for vehiculo in en_ruta %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ vehiculo.patente }}</h5>
+                            <small>En ruta con: {{ vehiculo.chofer_asignado.display_name }}</small>
+                        </div>
+                        <form method="POST" class="mt-2" onsubmit="return confirm('¿Confirmas el INGRESO del vehículo {{ vehiculo.patente }}?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="registrar_ingreso">
+                            <input type="hidden" name="patente" value="{{ vehiculo.patente }}">
+                            <div class="input-group">
+                                <select name="sitio" class="form-select" required>
+                                    <option value="" selected disabled>Devuelto en sitio...</option>
+                                    {% for sitio in sitios %}
+                                    <option value="{{ sitio.id }}">{{ sitio.nombre_sitio }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-success" type="submit">Registrar Ingreso</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">No hay backups en ruta para devolver.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

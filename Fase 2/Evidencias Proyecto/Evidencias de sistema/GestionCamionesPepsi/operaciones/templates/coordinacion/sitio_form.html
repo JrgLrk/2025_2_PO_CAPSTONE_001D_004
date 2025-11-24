@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ titulo }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button type="submit" class="btn btn-primary">Guardar Sitio</button>
+                                <a href="{% url 'sitio_list' %}" class="btn btn-secondary">Cancelar</a>
+                            </div>
+                            {% if form.instance.pk %}
+                            <a href="{% url 'sitio_delete' pk=form.instance.pk %}" class="btn btn-danger" onclick="event.preventDefault(); if(confirm('¿Estás seguro de que quieres eliminar este sitio?')) { document.getElementById('delete-form').submit(); }">Eliminar Sitio</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                    {% if form.instance.pk %}
+                    <form id="delete-form" method="POST" action="{% url 'sitio_delete' pk=form.instance.pk %}" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

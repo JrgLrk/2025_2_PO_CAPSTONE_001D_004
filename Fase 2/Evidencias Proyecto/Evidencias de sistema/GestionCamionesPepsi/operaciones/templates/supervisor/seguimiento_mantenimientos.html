@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Seguimiento Total de Mantenimientos</h1>
+        <a href="{% url 'supervisor_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Historial Completo de Solicitudes</h4>
+        </div>
+        <div class="p-3 bg-light border-bottom">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <label for="patente" class="form-label visually-hidden">Filtrar por Patente</label>
+                    <input type="text" name="patente" id="patente" class="form-control" placeholder="Buscar por patente..." value="{{ filtro_patente_actual }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="estado" class="form-label visually-hidden">Filtrar por Estado</label>
+                    <select name="estado" id="estado" class="form-select">
+                        <option value="">Todos los estados</option>
+                        {% for estado_val, estado_display in estados_posibles %}
+                            <option value="{{ estado_val }}" {% if filtro_estado_actual == estado_val %}selected{% endif %}>{{ estado_display }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-auto">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a href="{% url 'seguimiento_mantenimientos' %}" class="btn btn-outline-secondary">Limpiar</a>
+                </div>
+            </form>
+        </div>
+        <div class="card-body">
+            {% if mantenimientos %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">Patente</th>
+                                <th scope="col">Solicitante</th>
+                                <th scope="col">Motivo</th>
+                                <th scope="col">Mecánico Asignado</th>
+                                <th scope="col">Fecha Solicitud</th>
+                                <th scope="col" class="text-center">Estado Actual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mant in mantenimientos %}
+                            <tr>
+                                <td><span class="badge bg-primary">{{ mant.vehiculo.patente }}</span></td>
+                                <td>{{ mant.solicitado_por.get_full_name }}</td>
+                                <td title="{{ mant.motivo_ingreso }}">{{ mant.motivo_ingreso|truncatechars:35 }}</td>
+                                <td>{{ mant.mecanico_asignado.get_full_name|default:"-" }}</td>
+                                <td>{{ mant.fecha_solicitud|date:"d/m/Y H:i" }}</td>
+                                <td class="text-center">
+                                    {% with estado=mant.get_estado_display %}
+                                        {% if mant.estado == 'VALIDADO' or mant.estado == 'FINALIZADO' %}
+                                            <span class="badge bg-success">{{ estado }}</span>
+                                        {% elif mant.estado == 'REPARADO' %}
+                                            <span class="badge bg-info text-dark">{{ estado }}</span>
+                                        {% elif mant.estado == 'EN_REPARACION' or mant.estado == 'DIAGNOSTICO' %}
+                                            <span class="badge bg-warning text-dark">{{ estado }}</span>
+                                        {% elif mant.estado == 'AGENDADO' %}
+                                            <span class="badge bg-secondary">{{ estado }}</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">{{ estado }}</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-secondary text-center" role="alert">
+                    No hay ningún registro de mantenimiento en el sistema.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

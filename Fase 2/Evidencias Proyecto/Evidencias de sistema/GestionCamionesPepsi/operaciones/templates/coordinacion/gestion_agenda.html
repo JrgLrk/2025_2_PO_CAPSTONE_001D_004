@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block extra_head %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Agenda</h1>
+        <a href="{% url 'coordinacion_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Columna del Calendario -->
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Visualización del Calendario</h4>
+                </div>
+                <div class="card-body" id="calendar"></div>
+            </div>
+
+            <!-- Eliminación de Slot Específico -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4>Eliminar un Horario Disponible Específico</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Seleccione un horario disponible (pasado o futuro) para eliminarlo individualmente.</p>
+                    <form method="POST" onsubmit="return confirm('¿Está seguro de que desea eliminar este horario específico?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="eliminar_slot_especifico">
+                        <div class="input-group">
+                            <select name="slot_a_eliminar" class="form-select" required>
+                                <option value="" selected disabled>-- Seleccione un horario disponible --</option>
+                                {% for slot in slots_eliminables %}
+                                <option value="{{ slot.id }}">
+                                    {{ slot.taller.nombre_taller }} - {{ slot.get_tipo_atencion_display }} | {{ slot.hora_inicio }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-outline-danger">Eliminar Seleccionado</button>
+                        </div>
+                        {% if not slots_eliminables %} 
+                        <small class="form-text text-muted mt-2">No hay horarios disponibles para eliminar.</small>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna de Formularios -->
+        <div class="col-lg-5">
+            <!-- Generador de Agenda -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Generador de Agenda</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="generar_agenda">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Modo de Generación:</label>
+                            <div class="d-flex gap-3">
+                                {% for radio in form_generador.modo_generacion %}
+                                <div class="form-check">
+                                    {{ radio.tag }}
+                                    <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">{{ form_generador.taller.label_tag }} {{ form_generador.taller }}</div>
+                            <div class="col-md-6 mb-3">{{ form_generador.tipo_atencion.label_tag }} {{ form_generador.tipo_atencion }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">{{ form_generador.fecha_inicio.label_tag }} {{ form_generador.fecha_inicio }}</div>
+                            <div class="col-md-6 mb-3">{{ form_generador.fecha_fin.label_tag }} {{ form_generador.fecha_fin }}</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Días de la semana a generar:</label>
+                            <div class="d-flex flex-wrap gap-4 mt-2">
+                                {% for checkbox in form_generador.dias_semana %}
+                                <div class="form-check form-check-inline">
+                                    {{ checkbox.tag }}
+                                    <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">{{ form_generador.hora_apertura.label_tag }} {{ form_generador.hora_apertura }}</div>
+                            <div class="col-md-6 mb-3">{{ form_generador.hora_cierre.label_tag }} {{ form_generador.hora_cierre }}</div>
+                        </div>
+                        <div class="row" id="duracion_slot_container">
+                            <div class="col-md-12 mb-3">{{ form_generador.duracion_slot.label_tag }} {{ form_generador.duracion_slot }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">{{ form_generador.hora_inicio_colacion.label_tag }} {{ form_generador.hora_inicio_colacion }}</div>
+                            <div class="col-md-6 mb-3">{{ form_generador.duracion_colacion.label_tag }} {{ form_generador.duracion_colacion }}</div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 mt-3">Generar Horarios</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Eliminador de Agenda -->
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3>Eliminar Horarios Libres</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Esta acción eliminará todos los horarios <strong>no reservados</strong> dentro del rango de fechas y para el taller seleccionado.</p>
+                    <form method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar estos horarios? Esta acción no se puede deshacer.');">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="eliminar_agenda">
+                        <div class="mb-3">{{ form_eliminador.taller.label_tag }} {{ form_eliminador.taller }}</div>
+                        <div class="mb-3">{{ form_eliminador.fecha_inicio.label_tag }} {{ form_eliminador.fecha_inicio }}</div>
+                        <div class="mb-3">{{ form_eliminador.fecha_fin.label_tag }} {{ form_eliminador.fecha_fin }}</div>
+                        <div class="mb-3">{{ form_eliminador.tipo_atencion.label_tag }} {{ form_eliminador.tipo_atencion }}</div>
+                        <button type="submit" class="btn btn-danger w-100 mt-3">Eliminar Horarios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Sección del Calendario -->
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h3>Visualización de la Agenda</h3>
+        </div>
+        <div class="card-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modoRadios = document.querySelectorAll('input[name="modo_generacion"]');
+    const duracionContainer = document.getElementById('duracion_slot_container');
+
+    function toggleDuracion() {
+        const modoSeleccionado = document.querySelector('input[name="modo_generacion"]:checked').value;
+        duracionContainer.style.display = (modoSeleccionado === 'slots') ? 'block' : 'none';
+    }
+
+    modoRadios.forEach(radio => radio.addEventListener('change', toggleDuracion));
+    toggleDuracion(); // Ejecutar al cargar la página
+
+    // --- Inicialización de FullCalendar ---
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        height: 'auto', // Ajusta la altura al contenido
+        events: {{ calendar_events|safe }},
+        locale: 'es',
+        buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día'
+        }
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

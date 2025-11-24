@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Solicitudes de Insumos</h1>
+        <a href="{% url 'coordinacion_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <!-- Sección de Solicitudes Pendientes -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning">
+            <h4><i class="fas fa-clock me-2"></i>Insumos Pendientes de Aprobación</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha Solicitud</th>
+                            <th>Vehículo</th>
+                            <th>Insumo</th>
+                            <th>Cantidad</th>
+                            <th>Solicitado por</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for insumo in insumos_pendientes %}
+                        <tr>
+                            <td>{{ insumo.fecha_solicitud|date:"d/m/Y H:i" }}</td>
+                            <td><span class="badge bg-primary">{{ insumo.mantenimiento.vehiculo.patente }}</span></td>
+                            <td>{{ insumo.nombre_insumo }}</td>
+                            <td>{{ insumo.cantidad }}</td>
+                            <td>{{ insumo.solicitado_por.display_name }}</td>
+                            <td class="text-center">
+                                <form method="POST" action="{% url 'procesar_insumo' insumo.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" name="accion" value="aprobar" class="btn btn-sm btn-success">Aprobar</button>
+                                </form>
+                                <form method="POST" action="{% url 'procesar_insumo' insumo.id %}" class="d-inline" onsubmit="return confirm('¿Está seguro de que desea rechazar este insumo?');">
+                                    {% csrf_token %}
+                                    <button type="submit" name="accion" value="rechazar" class="btn btn-sm btn-danger">Rechazar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No hay solicitudes de insumos pendientes.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Historial de Solicitudes -->
+    <div class="card">
+        <div class="card-header">
+            <h4><i class="fas fa-history me-2"></i>Últimos Insumos Procesados</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Fecha Aprob/Rech.</th>
+                            <th>Vehículo</th>
+                            <th>Insumo</th>
+                            <th>Estado</th>
+                            <th>Procesado por</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for insumo in insumos_procesados %}
+                        <tr>
+                            <td>{{ insumo.fecha_aprobacion|date:"d/m/Y H:i" }}</td>
+                            <td>{{ insumo.mantenimiento.vehiculo.patente }}</td>
+                            <td>{{ insumo.nombre_insumo }}</td>
+                            <td>
+                                {% if insumo.estado_aprobacion == 'APROBADO' %}<span class="badge bg-success">{{ insumo.get_estado_aprobacion_display }}</span>
+                                {% else %}<span class="badge bg-danger">{{ insumo.get_estado_aprobacion_display }}</span>{% endif %}
+                            </td>
+                            <td>{{ insumo.aprobado_por.display_name|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay historial de insumos procesados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

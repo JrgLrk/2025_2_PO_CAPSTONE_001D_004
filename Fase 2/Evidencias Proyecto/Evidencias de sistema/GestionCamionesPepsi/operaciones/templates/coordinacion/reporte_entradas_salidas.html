@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Reporte de Entradas y Salidas de Taller</h1>
+        <a href="{% url 'coordinacion_dashboard' %}" class="btn btn-secondary">Volver al Panel</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Historial de Movimientos</h5>
+        </div>
+        <div class="card-body">
+            {% if historial %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Fecha y Hora</th>
+                                <th scope="col">Usuario (Guardia)</th>
+                                <th scope="col">Descripción del Evento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evento in historial %}
+                            <tr>
+                                <td>{{ evento.fecha_cambio|date:"d/m/Y H:i" }}</td>
+                                <td>{{ evento.usuario.display_name }}</td>
+                                <td>{{ evento.descripcion }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center text-muted">No hay registros de entradas o salidas de mantenimiento para mostrar.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

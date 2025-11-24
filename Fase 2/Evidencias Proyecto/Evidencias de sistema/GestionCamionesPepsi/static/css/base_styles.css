@@ -1,0 +1,268 @@
+/* ----------------------------------------- */
+/* 1. VARIABLES Y ESTILOS GLOBALES (RAÍZ)    */
+/* ----------------------------------------- */
+:root {
+    --primary: #1e3a8a; /* Azul Oscuro Profundo */
+    --bg-body: #F3F4F6; /* Gris muy claro para el fondo */
+    --card-bg: #FFFFFF; /* Blanco puro para tarjetas */
+    --text-dark: #1F2937;
+    --text-light: #6B7280;
+    
+    /* Colores de estado para la barra lateral y etiquetas */
+    --status-high: #EF4444; /* Rojo */
+    --status-medium: #F59E0B; /* Ámbar */
+    --status-low: #10B981; /* Verde */
+    --status-info: #3B82F6; /* Azul */
+    --status-neutral: #6B7280; /* Gris */
+}
+
+/* Reseteo básico y configuración de la fuente */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-dark);
+    line-height: 1.6;
+    /* Espacio superior para compensar la cabecera fija */
+    padding-top: 50px; /* Altura balanceada */
+}
+
+/* ----------------------------------------- */
+/* 2. CABECERA DECORATIVA (HERO)             */
+/* ----------------------------------------- */
+.fondo-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px; /* La altura ahora coincide con el padding del body */
+    background-color: var(--primary);
+    
+    /* Patrón sutil de "blueprint" o "fibra de carbono" con CSS */
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 10px
+    );
+    
+    z-index: -1; /* Se asegura que esté detrás de todo el contenido */
+    border-bottom-right-radius: 2rem; /* Esquina redondeada sutil */
+}
+
+/* --- Estilos para la Barra de Navegación Fija --- */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030; /* Un z-index alto para que esté sobre todo */
+    
+    /* Efecto de vidrio esmerilado para legibilidad */
+    background-color: rgba(30, 58, 138, 0.8); /* Azul primario con transparencia */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ----------------------------------------- */
+/* 3. LAYOUT PRINCIPAL Y CONTENEDORES        */
+/* ----------------------------------------- */
+.container {
+    /* Añadimos un margen superior para separar el contenido de la cabecera */
+    margin-top: 2rem;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap; /* Para que se ajuste en móviles */
+    gap: 1rem;
+}
+
+.panel-header h1 {
+    color: var(--text-dark);
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+/* ----------------------------------------- */
+/* 4. GRID DE TARJETAS RESPONSIVO            */
+/* ----------------------------------------- */
+.card-grid {
+    display: grid;
+    gap: 1.5rem;
+    /* Móvil: 1 columna por defecto */
+    grid-template-columns: 1fr;
+}
+
+/* Escritorio: Layout automático de 2, 3 o 4 columnas */
+@media (min-width: 768px) {
+    .card-grid {
+        /* Crea columnas de mínimo 340px, llenando el espacio disponible */
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    }
+}
+
+/* ----------------------------------------- */
+/* 5. ESTILO DE LAS TARJETAS (CARDS)         */
+/* ----------------------------------------- */
+.task-card, .card { /* Aplicamos el estilo base a .task-card y también a la clase .card de Bootstrap */
+    background-color: var(--card-bg);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+    overflow: hidden; /* Para que el borde izquierdo no se salga */
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none; /* Anulamos el borde por defecto de Bootstrap */
+}
+
+.task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
+}
+
+/* Barra lateral de estado/prioridad */
+.task-card.status-high { border-left: 6px solid var(--status-high); }
+.task-card.status-medium { border-left: 6px solid var(--status-medium); }
+.task-card.status-low { border-left: 6px solid var(--status-low); }
+.task-card.status-info { border-left: 6px solid var(--status-info); }
+
+.card-content {
+    padding: 1.5rem;
+    flex-grow: 1; /* Permite que el contenido crezca y empuje el footer hacia abajo */
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.card-title .patente {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Etiqueta de estado (Pill Badge) */
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px; /* Totalmente redondeado */
+    color: #fff;
+    white-space: nowrap;
+}
+.badge-high { background-color: var(--status-high); }
+.badge-medium { background-color: var(--status-medium); }
+.badge-low { background-color: var(--status-low); }
+.badge-info { background-color: var(--status-info); }
+.badge-neutral { background-color: var(--status-neutral); }
+
+.card-details {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+}
+.card-details p {
+    margin-bottom: 0.5rem;
+}
+.card-details strong {
+    color: var(--text-dark);
+}
+
+.card-footer-actions {
+    background-color: #F9FAFB; /* Un gris aún más claro para el footer */
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--bg-body);
+}
+
+/* ----------------------------------------- */
+/* 6. BOTONES (ALTO CONTRASTE Y TAMAÑO)      */
+/* ----------------------------------------- */
+.btn {
+    display: inline-block;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 0.65rem 1.25rem; /* Botones más grandes para facilitar el toque */
+    font-size: 0.9rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-full-width {
+    width: 100%;
+}
+
+/* Ajustes para que los botones de Bootstrap hereden el estilo */
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-success { background-color: var(--status-low) !important; border-color: var(--status-low) !important; }
+.btn-warning { background-color: var(--status-medium) !important; border-color: var(--status-medium) !important; }
+.btn-danger { background-color: var(--status-high) !important; border-color: var(--status-high) !important; }
+.btn-info { background-color: var(--status-info) !important; border-color: var(--status-info) !important; }
+
+/* ----------------------------------------- */
+/* 7. ANIMACIONES Y MICRO-INTERACCIONES      */
+/* ----------------------------------------- */
+.navbar-brand img {
+    transition: transform 0.7s ease-in-out;
+}
+.navbar-brand:hover img {
+    transform: rotate(360deg);
+}
+
+/* ----------------------------------------- */
+/* 8. SOLICITUD DE ATENCIÓN (SLOTS)          */
+/* ----------------------------------------- */
+.slot-card {
+    border: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.slot-card:hover {
+    border-color: var(--status-info);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.slot-card.active {
+    border-color: var(--primary);
+    background-color: #eef2ff; /* Un fondo azul muy claro para destacar */
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+    transform: translateY(-3px);
+}
+
+.slot-card.active .card-title,
+.slot-card.active .card-text {
+    font-weight: 600;
+    color: var(--primary);
+}
